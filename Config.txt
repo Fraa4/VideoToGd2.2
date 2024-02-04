@@ -1,11 +1,12 @@
 Src:<decode.gif>; //the video you want to convert, INCLUDE THE EXTENSION OF THE FILE
 NShapes:<1500>;//Higher=better quality, more processing time and more lag in gd
 Shapes:<circle ellipse rotated_ellipse rectangle>; //Supported shapes: circle, ellipse, rotated_ellipses, rectangle, separate the different shapes using a space
-Skip:<2>; //Frame skip in actual video, if video is 60 fps you can put 30fps and 2 frame skip to make it play at the same speed,
+Skip:<4>; //Frame skip in actual video, if video is 60 fps you can put 30fps and 2 frame skip to make it play at the same speed,
 FPS:<15>; //Frames of the original video/Skip
-Frames:<100>; //Number of frames
+Frames:<50>; //Number of frames
 Resolution:<100>; //Resolution of the image that is sent to geometrize, unless the video is super detailed there's no point to put this above 200, it slows down the processing by A LOT
 Shapes Per Refresh <20>; //Advanced setting, do not modify unless you know what you're doing
-Mutations<20>; //Advanced setting, do not modify unless you know what you're doing
+Mutations<10>; //Advanced setting, do not modify unless you know what you're doing
 Scale:<3>; //How big is the image in GD, do not go above 5
+Method:<1>; 0 for GMD output, 1 for WSLive Editor (Check Readme)
 
