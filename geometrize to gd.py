@@ -46,6 +46,7 @@ def Clean():
         file_path = os.path.join("Files", file)
         os.remove(file_path)
     os.remove("var.txt")
+    os.remove("tracker.txt")
 #getConfig
 with open("config.txt") as c:
     config=c.read()
@@ -112,7 +113,19 @@ def getImages(bl):
 frames=getImages(bl)/(SKIP)
 print(frames)
 lvlstr=""
+
 for sFrame in range(0,int(frames)):
+    n=False
+    while(n==False):
+        try:
+            with open("tracker.txt","w") as w:
+                w.write(str(sFrame+1))
+                #add this line
+                w.close()
+            n=True
+        except Exception as e:
+            n=False
+
     id=sFrame+1
     print("Converting frame"+str(sFrame))
     cmd('geometrize -i output/frame_'+str(sFrame*SKIP)+'.jpg -o output2/'+str(sFrame)+'.json -s '+NShapes+' -t "'+Shapes+'" -m '+Mutations+' -c '+SpG)
