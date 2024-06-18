@@ -1,5 +1,5 @@
 # VideoToGd2.2
-A program that converts videos from Geometrize to Geometry Dash. Currently it's only available for Windows.
+A program that converts videos from Geometrize to Geometry Dash. Only available on Windows currently.
 
 # Requirements
 
