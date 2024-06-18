@@ -2,7 +2,7 @@
 A program that converts videos from Geometrize to Geometry Dash. Only available on Windows.
 
 # Requirements
-- [GDShare](https://geode-sdk.org/mods/hjfod.gdshare/) and [WSLiveEditor](https://geode-sdk.org/mods/iandyhd3.wsliveeditor/), which is available on the modloader [Geode](https://geode-sdk.org)
+- [GDShare](https://geode-sdk.org/mods/hjfod.gdshare/) and [WSLiveEditor](https://geode-sdk.org/mods/iandyhd3.wsliveeditor/), which both of them are available on the [Geode](https://geode-sdk.org) modloader
 - 4GB Patch (not required but recommended)
 - Atleast 1GB of free space in disk
 
@@ -27,10 +27,10 @@ Sometimes the file can freeze at the last frame, if it's staying there for longe
 # Import methods
 
 ## GMD import
-This method uses [GDShare](https://geode-sdk.org/mods/hjfod.gdshare/). Simply start the .EXE file and at the end of the script when the windows closes you will see a "level.gmd" file in the "Files" folder, open Geometry Dash and go to the Create tab, then click the GDShare button and select that file, now a level should have appeared in the top of your created levels.
+This method uses [GDShare](https://geode-sdk.org/mods/hjfod.gdshare/). Simply start the .EXE file and at the end of the script when the window closes, you will see a "level.gmd" file in the "Files" folder, open Geometry Dash and go to the Create tab, then click the GDShare button and select that file, now a level should have appeared in the top of your created levels.
 
 ## WSLiveEditor
-This method uses the [WSLiveEditor](https://geode-sdk.org/mods/iandyhd3.wsliveeditor/) mod created by IAndyHD3, which is available in the modloader [Geode](https://geode-sdk.org). install it and create a new level, then while Geometry Dash is running in the background, start the script.
+This method uses the [WSLiveEditor](https://geode-sdk.org/mods/iandyhd3.wsliveeditor/) mod created by IAndyHD3, which is available in the [Geode](https://geode-sdk.org) modloader. install it and create a new level, then while Geometry Dash is running in the background, start the script.
 You should start seeing objects appearing in the level, wait for it to finish.
 It's recommended that you use an empty level for this, the groups are not customizable and the object position is fixed.
 
