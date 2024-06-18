@@ -3,10 +3,10 @@ A program that converts videos from Geometrize to Geometry Dash. Only available 
 
 # Categories
 
-- [Requirements](#import-methods)
-- [How to use](https://github.com/slideglide/VideoToGd2.2/blob/main/README.md#how-to-use)
-- [Import methods](https://github.com/slideglide/VideoToGd2.2/blob/main/README.md#import-methods)
-- [Credits](https://github.com/slideglide/VideoToGd2.2/blob/main/README.md#import-methods)
+- [Requirements](#requirements)
+- [How to use](#how-to-use)
+- [Import methods](#import-methods)
+- [Credits](#credits)
 
 # Requirements
 - [GDShare](https://geode-sdk.org/mods/hjfod.gdshare/) and [WSLiveEditor](https://geode-sdk.org/mods/iandyhd3.wsliveeditor/), which both of them are available on the [Geode](https://geode-sdk.org) modloader
