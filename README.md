@@ -1,6 +1,13 @@
 # VideoToGd2.2
 A program that converts videos from Geometrize to Geometry Dash. Only available on Windows.
 
+# Categories
+
+Requirements
+How to use
+Import methods
+Credits
+
 # Requirements
 - [GDShare](https://geode-sdk.org/mods/hjfod.gdshare/) and [WSLiveEditor](https://geode-sdk.org/mods/iandyhd3.wsliveeditor/), which both of them are available on the [Geode](https://geode-sdk.org) modloader
 - 4GB patch (not required but recommended)
