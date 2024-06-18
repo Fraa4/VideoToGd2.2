@@ -44,7 +44,7 @@ This method uses [GDShare](https://geode-sdk.org/mods/hjfod.gdshare/). Simply st
 
 ## WSLiveEditor
 This method uses the [WSLiveEditor](https://geode-sdk.org/mods/iandyhd3.wsliveeditor/) mod created by IAndyHD3, which is available on the [Geode](https://geode-sdk.org) modloader. Install it and create a new level, then while Geometry Dash is running in the background, start the script.
-You should start seeing objects appearing in the level, wait for it to finish.
+You should see objects appearing in the level, wait for it to finish.
 It's recommended that you use an empty level for this, the groups are not customizable and the object position is fixed.
 
 **NOTE:** You need to stay in the editor in order to make the script work.
