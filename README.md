@@ -2,12 +2,12 @@
 A program that converts videos from Geometrize to Geometry Dash. Only available on Windows.
 
 # Requirements
-- [GDShare](https://geodesdk.org/mods/hjfod.gdshare/) and [WSLiveEditor](https://geodesdk.org/mods/iandyhd3.wsliveeditor/), which are available on the modloader [Geode](https://geodesdk.org)
+- [GDShare](https://geodesdk.org/mods/hjfod.gdshare/) and [WSLiveEditor](https://geodesdk.org/mods/iandyhd3.wsliveeditor/), which is available on the modloader [Geode](https://geodesdk.org)
 - 4GB Patch (not required but recommended)
 - Atleast 1GB of free space in disk
 
 # How to use
-- Download the program from [Releases](https://github.com/Fraa4/VideoToGd2.2/releases).
+- Download the program from [Releases](https://github.com/Fraa4/VideoToGd2.2/releases)
 - Open VideoToGd.exe
 - Select a video (mp4, avi or gif)
 - Select import method
@@ -23,4 +23,8 @@ A program that converts videos from Geometrize to Geometry Dash. Only available 
 - Click next
 
 Sometimes the file can freeze at the last frame, if it's staying there for longer then usual you can stop the app, it's finished but it's not showing, one method to see if it's finised is that if you're using WSLiveEditor you should see a static camera trigger, if it's there the program has finished.
+
+# Import methods
+
+## .GMD import
 
