@@ -38,5 +38,5 @@ It's recommended that you use an empty level for this, the groups are not custom
 
 # Credits
 
-Program made by Fra4 (fra4 on Discord)
-GUI made by Hacoc (.nasos. on Discord)
+- Program made by Fra4 (fra4 on Discord)
+- GUI made by Hacoc (.nasos. on Discord)
