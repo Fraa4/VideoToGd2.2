@@ -36,3 +36,7 @@ It's recommended that you use an empty level for this, the groups are not custom
 
 **NOTE:** You need to stay in the editor in order to make the script work.
 
+# Credits
+
+Program made by Fra4 (fra4 on Discord)
+GUI made by Hacoc (.nasos. on Discord)
