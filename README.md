@@ -29,6 +29,12 @@ A program that converts videos from Geometrize to Geometry Dash. Only available 
 - Write number of scale (do not go above 5)
 - Click next
 
+Your antivirus could detect this program as a virus, this is because the program is using a batch command to run the geometrize function, if the program has any problem, try
+disabling your antivirus before contacting me.
+
+The script can take a very long time to run, if you decide that you want to stop the generation you can close the cmd window and then run the "quick import.py" to
+import just the frames it has generated or insted you can change settings and just run the exe again, once you stop the program it's not resumable, it has to start over.
+
 Sometimes the file can freeze at the last frame, if it's staying there for longer then usual you can stop the app, it's finished but it's not showing, one method to see if it's finised is that if you're using WSLiveEditor you should see a static camera trigger, if it's there the program has finished.
 
 # Import methods
