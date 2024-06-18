@@ -17,7 +17,7 @@ A program that converts videos from Geometrize to Geometry Dash. Only available 
 - Download the program from [Releases](https://github.com/Fraa4/VideoToGd2.2/releases)
 - Open VideoToGd.exe
 - Select a video (mp4, avi or gif)
-- Select import method (check the [Import methods](https://github.com/slideglide/VideoToGd2.2/blob/main/README.md#import-methods) category to see the import methods)
+- Select import method (check the [Import methods](#import-methods) category to see the import methods)
 - Write numbers of shapes per frame
 - Select the shapes (they will be used in the frame)
 - Write numbers of frames
