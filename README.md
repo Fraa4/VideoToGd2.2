@@ -3,7 +3,7 @@ A program that converts videos from Geometrize to Geometry Dash. Only available 
 
 # Categories
 
-- [Requirements](https://github.com/slideglide/VideoToGd2.2/blob/main/README.md#requirements)
+- [Requirements](#import-methods)
 - [How to use](https://github.com/slideglide/VideoToGd2.2/blob/main/README.md#how-to-use)
 - [Import methods](https://github.com/slideglide/VideoToGd2.2/blob/main/README.md#import-methods)
 - [Credits](https://github.com/slideglide/VideoToGd2.2/blob/main/README.md#import-methods)
