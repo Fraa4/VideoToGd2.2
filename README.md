@@ -3,7 +3,7 @@ A program that converts videos from Geometrize to Geometry Dash. Only available 
 
 # Requirements
 - [GDShare](https://geode-sdk.org/mods/hjfod.gdshare/) and [WSLiveEditor](https://geode-sdk.org/mods/iandyhd3.wsliveeditor/), which both of them are available on the [Geode](https://geode-sdk.org) modloader
-- 4GB Patch (not required but recommended)
+- 4GB patch (not required but recommended)
 - Atleast 1GB of free space in disk
 
 # How to use
