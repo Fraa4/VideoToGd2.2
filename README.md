@@ -1,5 +1,5 @@
 # VideoToGd2.2
-A program that converts videos from [Geometrize](https://www.geometrize.co.uk/) to [Geometry Dash](https://en.wikipedia.org/wiki/Geometry_Dash). Only available on Windows.
+A program that converts videos from [Geometrize](https://www.geometrize.co.uk/) to [Geometry Dash](https://en.wikipedia.org/wiki/Geometry_Dash). Only available on [Windows](https://en.wikipedia.org/wiki/Microsoft_Windows).
 
 # Categories
 
