@@ -48,6 +48,17 @@ It's recommended that you use an empty level for this, the groups are not custom
 
 **NOTE:** You need to stay in the editor in order to make the script work.
 
+# Most common errors
+
+## 1: Video not found:
+If the progress bar shows that it is at 0/total it probably means that the program couldn't find the video, make sure you included the right extension and put the video in the same folder as the .exe or the .py.
+If it shows that it stopped after some frames maybe there's a corrupted frame or the video simply finished.
+In both cases you need to stop the program, fix the issue (maybe download the video again or lower the frames rendered) and run it again.
+
+## 2: Error comunicating with the Editor
+Make sure the WSLiveEditor mod is installed and at the latest version, then make sure to open the level editor before starting the program.
+If this doesn't fix it check for antiviruses or anything that could block the connection.
+
 # Credits
 
 - Program made by Fra4 (fra4 on Discord)

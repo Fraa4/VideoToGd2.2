@@ -12,6 +12,7 @@ import tkinter as tk
 from tkinter import ttk
 import threading
 import queue
+from time import sleep
 def Add(obj,Method):
     if(Method==True):
         asyncio.new_event_loop().run_until_complete(AsAdd(obj))
@@ -23,14 +24,19 @@ def Add(obj,Method):
 async def AsAdd(obj):
     uri = "ws://127.0.0.1:1313"
 
-    async with websockets.connect(uri) as websocket:
-        # Send a message to the WebSocket server
-        message = {
-            "action": "ADD",
-            "objects": obj
-        }
-        message_json = dumps(message)
-        await websocket.send(message_json)
+    try:
+        async with websockets.connect(uri) as websocket:
+            # Send a message to the WebSocket server
+            message = {
+                "action": "ADD",
+                "objects": obj
+            }
+            message_json = dumps(message)
+            await websocket.send(message_json)
+    except:
+        progress_window.queue.put({'type': 'log', 'text': "Error comunicating with the Editor, (check README)"})
+        stopProgram(5)
+
 
 
 
@@ -90,13 +96,16 @@ def cycle(root,config):
     print("Objects estimate: "+str(float(NShapes)*float(FRAMES)))
     fileOut="file.json"
     bl=False
+    frames=FRAMES/SKIP
+    total_iterations=int(frames*SKIP)
+    global progress_window
+    progress_window = ProgressWindow(root, total_iterations)
     if(fileN[len(fileN)-3:len(fileN)]=="gif"):
         bl=True
     frames=getImages(bl,fileN,FRAMES,SKIP,RES)/(SKIP)
-    print(frames)
+    progress_window.queue.put({'type': 'status', 'text': 'Converting frames...'})
     lvlstr=""
-
-    def processing_loop(config, progress_window):
+    def processing_loop():
         i=0
         for sFrame in range(0,int(frames)):
             if progress_window.should_stop:
@@ -205,64 +214,64 @@ def cycle(root,config):
             print("Done")
             Clean()
             root.destroy()
-            
+    if canStart:  
     #Window management
-    total_iterations=int(frames)
-    progress = ProgressWindow(root, total_iterations)
-    processing_thread = threading.Thread(
-            target=processing_loop,
-            args=(config, progress),
-            daemon=True
-        )
-    processing_thread.start()
-#getImages
-def getImages(bl, fileN, FRAMES, SKIP, RES):
-    # Ensure output directory exists
-    os.makedirs('output', exist_ok=True)
+        processing_thread = threading.Thread(
+                target=processing_loop,
+                daemon=True
+            )
+        processing_thread.start()
     
-    if bl:
+#getImages
+def getImages(bl,fileN,FRAMES,SKIP,RES):
+    if(bl):
         clip = VideoFileClip(fileN)
         clip.write_videofile("Files/video.mp4")
         capture = VideoCapture('Files/video.mp4')
     else:
         capture = VideoCapture(fileN)
-    
-    if not capture.isOpened():
-        raise Exception("Could not open video file")
-
     frameNr = 0
-    saved_frames = 0
-    total_frames_to_process = FRAMES
-
-    while saved_frames < total_frames_to_process:
-        # Skip the specified number of frames
-        for _ in range(SKIP):
-            success = capture.grab()
-            if not success:
-                break
-
-        # Read the frame we actually want to keep
-        success, frame = capture.retrieve()
+    
+    progress_window.queue.put({'type': 'status', 'text': 'Splitting video into frames...'})
+    for z in range(0,FRAMES*(SKIP)):
+        
+        success, frame = capture.read()
+        
+        global canStart
+        canStart=True
         if success:
-            global WIDTH
-            WIDTH=frame.shape[1]/(frame.shape[0]/RES)
-        if not success:
-            break
+            if z%SKIP==0:
+                global WIDTH
+                WIDTH=frame.shape[1]/(frame.shape[0]/RES)
+                frame=resize(frame,(int(WIDTH),RES))
+                imwrite(f'output/frame_{frameNr}.jpg', frame)
+                progress_window.queue.put({
+                    'type': 'progress',
+                    'current': z + 1,
+                    'total': FRAMES*SKIP
+                })
+        else:
+            progress_window.queue.put({'type': 'log', 'text': 'Video not found'})
+            stopThread= threading.Thread(
+            target=stopProgram,
+            args=(5,), 
+            daemon=True
+            )
+            stopThread.start()
+            canStart=False
+            return 0
+        print("Created Frame: "+str(frameNr+1)+"/"+str(float(FRAMES)*float(SKIP)))
+        frameNr = frameNr+1
         
-        # Calculate dimensions while maintaining aspect ratio
-        height = RES
-        h, w = frame.shape[:2]
-        width = int((w/h) * height)
-        
-        # Resize and save
-        resized = resize(frame, (width, height))
-        imwrite(f'output/frame_{saved_frames}.jpg', resized)
-        print(f"Created Frame: {saved_frames+1}/{FRAMES}")
-        
-        saved_frames += 1
+    capture.release()    
+    return frameNr
 
-    capture.release()
-    return saved_frames
+def stopProgram(delay):
+    for i in range(delay):
+        progress_window.queue.put({'type': 'log', 'text': 'Quitting in '+str(delay-i)})
+        sleep(1)
+    root.destroy()
+    quit()
 class ProgressWindow:
     def __init__(self, parent, total_iterations):
         self.top = tk.Toplevel(parent)
@@ -334,7 +343,7 @@ def submit():
         config = {
             'file_name': file_entry.get(),
             'num_shapes': int(num_shapes_entry.get()),
-            'shapes': shapes_entry.get().split(','),
+            'shapes': shapes_entry.get(),
             'skip': int(skip_entry.get()),
             'fps': int(fps_entry.get()),
             'frames': int(frames_entry.get()),
@@ -350,7 +359,6 @@ def submit():
         cycle(root,config)
     except ValueError as e:
         error_label.config(text=f"Invalid input: {str(e)}", foreground="red")
-
 # Main window setup
 root = tk.Tk()
 root.title("Animation Configuration")
