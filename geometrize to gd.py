@@ -225,9 +225,18 @@ def cycle(root,config):
 #getImages
 def getImages(bl,fileN,FRAMES,SKIP,RES):
     if(bl):
-        clip = VideoFileClip(fileN)
-        clip.write_videofile("Files/video.mp4")
-        capture = VideoCapture('Files/video.mp4')
+        try:
+            clip = VideoFileClip(fileN)
+            clip.write_videofile("Files/video.mp4")
+            capture = VideoCapture('Files/video.mp4')
+        except:
+            progress_window.queue.put({'type': 'log', 'text': 'Video not found'})
+            stopThread= threading.Thread(
+            target=stopProgram,
+            args=(5,), 
+            daemon=True
+            )
+            stopThread.start()
     else:
         capture = VideoCapture(fileN)
     frameNr = 0
