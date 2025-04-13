@@ -224,6 +224,7 @@ def cycle(root,config):
     
 #getImages
 def getImages(bl,fileN,FRAMES,SKIP,RES):
+    capture = None
     if(bl):
         try:
             clip = VideoFileClip(fileN)
