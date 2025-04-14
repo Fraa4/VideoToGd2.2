@@ -1,7 +1,7 @@
 from colorsys import rgb_to_hsv as rgbhsv
-from subprocess import run as cmd
+from subprocess import run as cmd, CREATE_NO_WINDOW
 from cv2 import imwrite, resize, VideoCapture
-from moviepy.editor import VideoFileClip
+import moviepy.editor
 import websockets
 import asyncio
 from json import dumps
@@ -13,6 +13,13 @@ from tkinter import ttk
 import threading
 import queue
 from time import sleep
+
+import sys
+
+output = open("log.txt", "wt")
+sys.stdout = output
+sys.stderr = output
+
 def Add(obj,Method):
     if(Method==True):
         asyncio.new_event_loop().run_until_complete(AsAdd(obj))
@@ -104,14 +111,18 @@ def cycle(root,config):
         bl=True
     frames=getImages(bl,fileN,FRAMES,SKIP,RES)/(SKIP)
     progress_window.queue.put({'type': 'status', 'text': 'Converting frames...'})
-    lvlstr=""
     def processing_loop():
         i=0
         for sFrame in range(0,int(frames)):
             if progress_window.should_stop:
                 progress_window.queue.put({'type': 'log', 'text': 'Process stopped by user'})
                 break
-
+            progress_window.queue.put({'type': 'log', 'text': 'Converting frame: '+str(i+1)})
+            progress_window.queue.put({
+                'type': 'progress',
+                'current': i,
+                'total': total_iterations
+            })
 
 
             n=False
@@ -127,7 +138,8 @@ def cycle(root,config):
 
             id=sFrame+1
             print("Converting frame"+str(sFrame))
-            cmd('geometrize -i output/frame_'+str(sFrame*SKIP)+'.jpg -o output2/'+str(sFrame)+'.json -s '+str(NShapes)+' -t "'+str(Shapes)+'" -m '+str(Mutations)+' -c '+str(SpG))
+
+            cmd('geometrize -i output/frame_'+str(sFrame*SKIP)+'.jpg -o output2/'+str(sFrame)+'.json -s '+str(NShapes)+' -t "'+str(Shapes)+'" -m '+str(Mutations)+' -c '+str(SpG),creationflags=CREATE_NO_WINDOW)
 
             with open("output2/"+str(sFrame)+".json") as file:
                 f=file.read()
@@ -187,11 +199,6 @@ def cycle(root,config):
             if(id!=1):
                 Add("1,901,2,"+str(300+(id*30))+",3,225,57,"+str(frames+id)+",62,1,87,1,36,1,51,"+str(id+1)+",28,0,29,"+str(-(id-1)*600)+",10,0,30,0,85,2,544,1;",Method)
                 Add("1,901,2,"+str(300+(id*30))+",3,255,57,"+str(frames+id)+",62,1,87,1,36,1,51,"+str(id)+",28,0,29,"+str(-900)+",10,0,30,0,85,2,544,1;",Method)
-            progress_window.queue.put({
-                'type': 'progress',
-                'current': i + 1,
-                'total': total_iterations
-            })
 
             progress_window.queue.put({'type': 'log', 'text': 'Frame: '+str(i+1)+" rendered"})
             i=i+1
@@ -224,12 +231,12 @@ def cycle(root,config):
     
 #getImages
 def getImages(bl,fileN,FRAMES,SKIP,RES):
-    capture = None
+    path=""
     if(bl):
         try:
-            clip = VideoFileClip(fileN)
-            clip.write_videofile("Files/video.mp4")
-            capture = VideoCapture('Files/video.mp4')
+            clip = moviepy.editor.VideoFileClip(fileN)
+            clip.write_videofile("Files\\video.mp4")
+            path='Files\\video.mp4'
         except:
             progress_window.queue.put({'type': 'log', 'text': 'Video not found'})
             stopThread= threading.Thread(
@@ -239,8 +246,9 @@ def getImages(bl,fileN,FRAMES,SKIP,RES):
             )
             stopThread.start()
     else:
-        capture = VideoCapture(fileN)
+        path=fileN
     frameNr = 0
+    capture = VideoCapture(path)
     
     progress_window.queue.put({'type': 'status', 'text': 'Splitting video into frames...'})
     for z in range(0,FRAMES*(SKIP)):
@@ -404,7 +412,7 @@ ttk.Label(main_frame, text="Number of Shapes:").grid(row=row_counter, column=0, 
 num_shapes_entry = ttk.Entry(main_frame)
 num_shapes_entry.grid(row=row_counter, column=1, sticky=tk.EW, pady=2)
 num_shapes_entry.insert(0, "100")
-ttk.Label(main_frame, text="Higher=better quality, more processing time and more lag in gd").grid(row=row_counter, column=2, sticky=tk.W)
+ttk.Label(main_frame, text="Higher=better quality, more processing time and more lag in gd, range (100-5000)").grid(row=row_counter, column=2, sticky=tk.W)
 row_counter += 1
 
 # Shapes
@@ -473,10 +481,10 @@ row_counter += 1
 
 # Method
 method_var = tk.BooleanVar()
-ttk.Label(main_frame, text="Method:").grid(row=row_counter, column=0, sticky=tk.E)
+ttk.Label(main_frame, text="Use WSLiveEditor:").grid(row=row_counter, column=0, sticky=tk.E)
 method_check = ttk.Checkbutton(main_frame, variable=method_var)
 method_check.grid(row=row_counter, column=1, sticky=tk.W, pady=2)
-ttk.Label(main_frame, text="Use advanced rendering method").grid(row=row_counter, column=2, sticky=tk.W)
+ttk.Label(main_frame, text="Use the WSLiveEditor mod (CHECK README)").grid(row=row_counter, column=2, sticky=tk.W)
 row_counter += 1
 
 # Error label
