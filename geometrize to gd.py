@@ -12,10 +12,13 @@ import tkinter as tk
 from tkinter import ttk
 import threading
 import queue
-from time import sleep
-
+from time import sleep,time
+import concurrent.futures
 import sys
-
+fileLock = threading.Lock()
+global increaseLock
+increaseLock = threading.Lock()
+renderedFrames=0
 output = open("log.txt", "wt")
 sys.stdout = output
 sys.stderr = output
@@ -24,8 +27,9 @@ def Add(obj,Method):
     if(Method==True):
         asyncio.new_event_loop().run_until_complete(AsAdd(obj))
     else:
-        with open("var.txt","a") as f:
-            f.write(obj)
+        with fileLock:
+            with open("var.txt","a") as f:
+                f.write(obj)
             
 
 async def AsAdd(obj):
@@ -43,7 +47,6 @@ async def AsAdd(obj):
     except:
         progress_window.queue.put({'type': 'log', 'text': "Error comunicating with the Editor, (check README)"})
         stopProgram(5)
-
 
 
 
@@ -99,6 +102,7 @@ def cycle(root,config):
         f.write("")
 
     rfr=1/FPS
+    global factor
     factor=float(RES/100)
     print("Objects estimate: "+str(float(NShapes)*float(FRAMES)))
     fileOut="file.json"
@@ -111,98 +115,85 @@ def cycle(root,config):
         bl=True
     frames=getImages(bl,fileN,FRAMES,SKIP,RES)/(SKIP)
     progress_window.queue.put({'type': 'status', 'text': 'Converting frames...'})
-    def processing_loop():
-        i=0
-        for sFrame in range(0,int(frames)):
-            if progress_window.should_stop:
-                progress_window.queue.put({'type': 'log', 'text': 'Process stopped by user'})
-                break
-            progress_window.queue.put({'type': 'log', 'text': 'Converting frame: '+str(i+1)})
-            progress_window.queue.put({
-                'type': 'progress',
-                'current': i,
-                'total': total_iterations
-            })
+    def runGeometrize(sFrame):
+        global renderedFrames
+        progress_window.queue.put({'type': 'log', 'text': 'Converting frame: '+str(sFrame+1)})
+        id=sFrame+1
+        print("Converting frame"+str(sFrame))
 
+        cmd('geometrize -i output/frame_'+str(sFrame*SKIP)+'.jpg -o output2/'+str(sFrame)+'.json -s '+str(NShapes)+' -t "'+str(Shapes)+'" -m '+str(Mutations)+' -c '+str(SpG),creationflags=CREATE_NO_WINDOW)
 
-            n=False
-            while(n==False):
-                try:
-                    with open("tracker.txt","w") as w:
-                        w.write(str(sFrame+1))
-                        #add this line
-                        w.close()
-                    n=True
-                except Exception as e:
-                    n=False
-
-            id=sFrame+1
-            print("Converting frame"+str(sFrame))
-
-            cmd('geometrize -i output/frame_'+str(sFrame*SKIP)+'.jpg -o output2/'+str(sFrame)+'.json -s '+str(NShapes)+' -t "'+str(Shapes)+'" -m '+str(Mutations)+' -c '+str(SpG),creationflags=CREATE_NO_WINDOW)
-
-            with open("output2/"+str(sFrame)+".json") as file:
-                f=file.read()
-            f=f.split("\n")
-            
-            for a in range(1,len(f)-1):
-                d=f[a]
-                #create Data[]
-                indtype=d.find('e":')+3
-                indtype2=d[indtype:len(d)].find(',')
-                typ=d[indtype:indtype2+indtype]
-                ind1=d.find('data":')
-                data=d[ind1+7:len(d)]
-                ind2=data.find("]")
-                data=data[0:ind2]
-                #create Color[]
-                ind1=d.find('color":')
-                color=d[ind1+8:len(d)]
-                ind2=color.find("]")
-                color=color[0:ind2]
-
-                #Convert Data to GD
-                instr="1,3802,2,"
-                data=data.split(",")
-                obj=""
-                xPos=str(float(data[0])/factor*SCALE+4800)
-                yPos=str(((2000-(float(data[1])/factor*SCALE)))+(600*(id-1)))
-                match int(typ):
-                    case 32:
-                        obj=instr+xPos+",3,"+yPos+",57,"+str(int(sFrame)+2)+",21,2,128,"+str(float(data[2])/(factor)*4*SCALE/30)+",129,"+str(float(data[2])/(factor)*4*SCALE/30)+",41,1,43,"
-
-                    case 8:
-                        obj=instr+xPos+",3,"+yPos+",57,"+str(int(sFrame)+2)+",21,2,128,"+str(float(data[2])/(factor)*4*SCALE/30)+",129,"+str(float(data[3])/(factor)*4*SCALE/30)+",41,1,43,"
-                    case 1:
-                        xPos=(float(data[0])/(factor)+float(data[2])/(factor))/2
-                        yPos=(float(data[1])/(factor)+float(data[3])/(factor))/2
-                        xScale=float(data[0])/(factor)-float(data[2])/(factor)
-                        yScale=float(data[1])/(factor)-float(data[3])/(factor)
-                        obj="1,211,2,"+str(xPos*SCALE+4800)+",3,"+str((2000-(yPos*SCALE))+(600*(id-1)))+",57,"+str(int(sFrame)+2)+",21,2,128,"+str(float(xScale*SCALE/30))+",129,"+str(float(yScale*SCALE/30))+",41,1,43,"
-                    case 16:
-                            obj=instr+xPos+",3,"+yPos+",57,"+str(int(sFrame)+2)+",6,"+str(data[4])+",21,2,128,"+str(float(data[2])/(factor)*4*SCALE/30)+",129,"+str(float(data[3])/(factor)*4*SCALE/30)+",41,1,43,"
-                    
-                    #Convert Color to GD
-                color=color.split(",")
-                (r, g, b) = (float(color[0])/255, float(color[1])/255, float(color[2])/255)
-                (h, s, v) = rgbhsv(r, g, b)
-                h=h*360-180
-                value=str(h)+"a"+str(s)+"a"+str(v)+"a0a0;"
-                obj=obj+value
-                Add(obj,Method)
+        with open("output2/"+str(sFrame)+".json") as file:
+            f=file.read()
+        f=f.split("\n")
                 
+        for a in range(1,len(f)-1):
+            d=f[a]
+            #create Data[]
+            indtype=d.find('e":')+3
+            indtype2=d[indtype:len(d)].find(',')
+            typ=d[indtype:indtype2+indtype]
+            ind1=d.find('data":')
+            data=d[ind1+7:len(d)]
+            ind2=data.find("]")
+            data=data[0:ind2]
+            #create Color[]
+            ind1=d.find('color":')
+            color=d[ind1+8:len(d)]
+            ind2=color.find("]")
+            color=color[0:ind2]
 
+            #Convert Data to GD
+            instr="1,3802,2,"
+            data=data.split(",")
+            obj=""
+            xPos=str(float(data[0])/factor*SCALE+4800)
+            yPos=str(((2000-(float(data[1])/factor*SCALE)))+(600*(id-1)))
+            match int(typ):
+                case 32:
+                    obj=instr+xPos+",3,"+yPos+",57,"+str(int(sFrame)+2)+",21,2,128,"+str(float(data[2])/(factor)*4*SCALE/30)+",129,"+str(float(data[2])/(factor)*4*SCALE/30)+",41,1,43,"
 
+                case 8:
+                    obj=instr+xPos+",3,"+yPos+",57,"+str(int(sFrame)+2)+",21,2,128,"+str(float(data[2])/(factor)*4*SCALE/30)+",129,"+str(float(data[3])/(factor)*4*SCALE/30)+",41,1,43,"
+                case 1:
+                    xPos=(float(data[0])/(factor)+float(data[2])/(factor))/2
+                    yPos=(float(data[1])/(factor)+float(data[3])/(factor))/2
+                    xScale=float(data[0])/(factor)-float(data[2])/(factor)
+                    yScale=float(data[1])/(factor)-float(data[3])/(factor)
+                    obj="1,211,2,"+str(xPos*SCALE+4800)+",3,"+str((2000-(yPos*SCALE))+(600*(id-1)))+",57,"+str(int(sFrame)+2)+",21,2,128,"+str(float(xScale*SCALE/30))+",129,"+str(float(yScale*SCALE/30))+",41,1,43,"
+                case 16:
+                        obj=instr+xPos+",3,"+yPos+",57,"+str(int(sFrame)+2)+",6,"+str(data[4])+",21,2,128,"+str(float(data[2])/(factor)*4*SCALE/30)+",129,"+str(float(data[3])/(factor)*4*SCALE/30)+",41,1,43,"
+                        
+                    #Convert Color to GD
+            color=color.split(",")
+            (r, g, b) = (float(color[0])/255, float(color[1])/255, float(color[2])/255)
+            (h, s, v) = rgbhsv(r, g, b)
+            h=h*360-180
+            value=str(h)+"a"+str(s)+"a"+str(v)+"a0a0;"
+            obj=obj+value
+            Add(obj,Method)
+        Add("1,1268,2,"+str(300+(id*30))+",3,1335,57,"+str(frames+1+id)+",62,1,87,1,36,1,51,"+str(frames+2+id)+",63,"+str(rfr)+";",Method)
 
-            Add("1,1268,2,"+str(300+(id*30))+",3,1335,57,"+str(frames+1+id)+",62,1,87,1,36,1,51,"+str(frames+2+id)+",63,"+str(rfr)+";",Method)
-
-            if(id!=1):
-                Add("1,901,2,"+str(300+(id*30))+",3,225,57,"+str(frames+id)+",62,1,87,1,36,1,51,"+str(id+1)+",28,0,29,"+str(-(id-1)*600)+",10,0,30,0,85,2,544,1;",Method)
-                Add("1,901,2,"+str(300+(id*30))+",3,255,57,"+str(frames+id)+",62,1,87,1,36,1,51,"+str(id)+",28,0,29,"+str(-900)+",10,0,30,0,85,2,544,1;",Method)
-
-            progress_window.queue.put({'type': 'log', 'text': 'Frame: '+str(i+1)+" rendered"})
-            i=i+1
-        progress_window.queue.put({'type': 'complete'})
+        if(id!=1):
+            Add("1,901,2,"+str(300+(id*30))+",3,225,57,"+str(frames+id)+",62,1,87,1,36,1,51,"+str(id+1)+",28,0,29,"+str(-(id-1)*600)+",10,0,30,0,85,2,544,1;",Method)
+            Add("1,901,2,"+str(300+(id*30))+",3,255,57,"+str(frames+id)+",62,1,87,1,36,1,51,"+str(id)+",28,0,29,"+str(-900)+",10,0,30,0,85,2,544,1;",Method)
+        with increaseLock:
+            print("frame "+str(sFrame)+" tfr: "+str(int(renderedFrames)))
+            renderedFrames=renderedFrames+1
+            progress_window.queue.put({'type': 'progress','current': renderedFrames,'total': total_iterations})
+            progress_window.queue.put({'type': 'log', 'text': 'Frame: '+str(sFrame+1)+" rendered"})
+    def processing_loop():
+        start_time = time()
+        maxThreads=config["mxthr"]
+        args = [i for i in range(int(frames))]
+        with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
+            futures = {executor.submit(runGeometrize, arg): arg for arg in args}
+            
+            for future in concurrent.futures.as_completed(futures):
+                if progress_window.should_stop:
+                    progress_window.queue.put({'type': 'log', 'text': 'Process stopped by user'})
+                    stopProgram(5)
+        #progress_window.queue.put({'type': 'complete'})
         xPos=float(WIDTH/2)*SCALE/factor+4800
         yPos=((2000-(float(RES/2)*SCALE/factor)))
         Add("1,1268,2,100,3,100,36,1,51,"+str(frames+2)+",63,0;1,3802,2,"+str(xPos)+",3,"+str(yPos)+",57,1;",Method)
@@ -218,18 +209,16 @@ def cycle(root,config):
             final=strin+lvlstr.decode()+strlast
             with open("level.gmd","a") as fn:
                 fn.write(final)
-            print("Done")
-            Clean()
-            root.destroy()
+        print("Done, time= "+str(time()-start_time))
+        Clean()
+        root.destroy()
     if canStart:  
     #Window management
         processing_thread = threading.Thread(
                 target=processing_loop,
                 daemon=True
-            )
+        )
         processing_thread.start()
-    
-#getImages
 def getImages(bl,fileN,FRAMES,SKIP,RES):
     path=""
     if(bl):
@@ -369,7 +358,8 @@ def submit():
             'spr': int(spr_entry.get()),
             'mutation': int(mutation_entry.get()),
             'scale': int(scale_entry.get()),
-            'method': bool(method_var.get())
+            'method': bool(method_var.get()),
+            'mxthr' : int(threads_entry.get())
         }
         
         # Hide main window during processing
@@ -477,6 +467,14 @@ scale_entry = ttk.Entry(main_frame)
 scale_entry.grid(row=row_counter, column=1, sticky=tk.EW, pady=2)
 scale_entry.insert(0, "3")
 ttk.Label(main_frame, text="How big is the image in GD, do not go above 5").grid(row=row_counter, column=2, sticky=tk.W)
+row_counter += 1
+
+# MaxThreads
+ttk.Label(main_frame, text="Concurrent Threads:").grid(row=row_counter, column=0, sticky=tk.E)
+threads_entry = ttk.Entry(main_frame)
+threads_entry.grid(row=row_counter, column=1, sticky=tk.EW, pady=2)
+threads_entry.insert(0, "6")
+ttk.Label(main_frame, text="How many processes at once, 4-6 seems to be optimal but it might depend on hardware").grid(row=row_counter, column=2, sticky=tk.W)
 row_counter += 1
 
 # Method
