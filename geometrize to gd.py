@@ -1,5 +1,5 @@
 from colorsys import rgb_to_hsv as rgbhsv
-from subprocess import run as cmd, CREATE_NO_WINDOW
+from subprocess import Popen as cmd, CREATE_NO_WINDOW
 from cv2 import imwrite, resize, VideoCapture
 import moviepy.editor
 import websockets
@@ -16,6 +16,7 @@ from time import sleep,time
 import concurrent.futures
 import sys
 fileLock = threading.Lock()
+event=threading.Event()
 global increaseLock
 increaseLock = threading.Lock()
 renderedFrames=0
@@ -115,18 +116,24 @@ def cycle(root,config):
         bl=True
     frames=getImages(bl,fileN,FRAMES,SKIP,RES)/(SKIP)
     progress_window.queue.put({'type': 'status', 'text': 'Converting frames...'})
-    def runGeometrize(sFrame):
+    def runGeometrize(sFrame,eventIns):
         global renderedFrames
         progress_window.queue.put({'type': 'log', 'text': 'Converting frame: '+str(sFrame+1)})
         id=sFrame+1
         print("Converting frame"+str(sFrame))
 
-        cmd('geometrize -i output/frame_'+str(sFrame*SKIP)+'.jpg -o output2/'+str(sFrame)+'.json -s '+str(NShapes)+' -t "'+str(Shapes)+'" -m '+str(Mutations)+' -c '+str(SpG),creationflags=CREATE_NO_WINDOW)
-
+        process=cmd('geometrize -i output/frame_'+str(sFrame*SKIP)+'.jpg -o output2/'+str(sFrame)+'.json -s '+str(NShapes)+' -t "'+str(Shapes)+'" -m '+str(Mutations)+' -c '+str(SpG),creationflags=CREATE_NO_WINDOW)
+        while True:
+            if(process.poll() is not None):
+                break
+            sleep(0.5)
+            if event.is_set():
+                process.kill()
+                process.wait()
+                return
         with open("output2/"+str(sFrame)+".json") as file:
             f=file.read()
         f=f.split("\n")
-                
         for a in range(1,len(f)-1):
             d=f[a]
             #create Data[]
@@ -187,12 +194,14 @@ def cycle(root,config):
         maxThreads=config["mxthr"]
         args = [i for i in range(int(frames))]
         with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
-            futures = {executor.submit(runGeometrize, arg): arg for arg in args}
+            futures = {executor.submit(runGeometrize, arg,event): arg for arg in args}
             
             for future in concurrent.futures.as_completed(futures):
                 if progress_window.should_stop:
                     progress_window.queue.put({'type': 'log', 'text': 'Process stopped by user'})
+                    executor.shutdown(wait=False,cancel_futures=True)
                     stopProgram(5)
+
         #progress_window.queue.put({'type': 'complete'})
         xPos=float(WIDTH/2)*SCALE/factor+4800
         yPos=((2000-(float(RES/2)*SCALE/factor)))
@@ -277,6 +286,7 @@ def stopProgram(delay):
     for i in range(delay):
         progress_window.queue.put({'type': 'log', 'text': 'Quitting in '+str(delay-i)})
         sleep(1)
+    Clean()
     root.destroy()
     quit()
 class ProgressWindow:
@@ -315,8 +325,9 @@ class ProgressWindow:
 
     def request_stop(self):
         self.should_stop = True
+        event.set()
         self.stop_btn.config(state=tk.DISABLED)
-        self.log_message("Stopping after current iteration...")
+        self.log_message("Stopping...")
 
     def log_message(self, message):
         self.log_text.config(state=tk.NORMAL)
